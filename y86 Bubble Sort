@@ -1,0 +1,49 @@
+# Y86-64 Bubble Sort Program
+
+# Registers:
+# %rdi - Count of numbers in the array
+# %r8 - Last index for outer loop
+# %r9 - Index for inner loop
+# %r10 - Temporary storage for swapping
+# %rax - Temporary register for comparison
+
+# Initialize %r8 with count-1 for the outer loop
+irmovq $1, %r10          # Load constant 1 into %r10
+rrmovq %rdi, %r8        # Copy count to %r8
+subq %r10, %r8          # Decrement %r8 by 1 to get last index
+
+LoopStart:
+    irmovq $0, %r9      # Initialize inner loop index i to 0
+
+    InnerLoopStart:
+        # Compare data[i] and data[i+1]
+        mrmovq 0x100(%r9), %rax     # Load data[i] into %rax
+        mrmovq 0x108(%r9), %r10     # Load data[i+1] into %r10
+        subq %r10, %rax             # Subtract data[i+1] from data[i]
+        jge SwapElements            # If data[i] >= data[i+1], go to swap
+
+        # Increment i and check if i < last
+        irmovq $8, %r10             # Load constant 8 (size of long) into %r10
+        addq %r10, %r9              # Increment index i
+        rrmovq %r8, %rax            # Copy last to %rax for comparison
+        subq %r9, %rax              # Subtract i from last
+        jg InnerLoopStart           # If i < last, continue inner loop
+
+        # Decrement last and check if last > 0
+        subq %r10, %r8              # Decrement last
+        jmp LoopTest                # Jump to loop test
+
+    SwapElements:
+        # Swap data[i] and data[i+1]
+        rmmovq %rax, 0x108(%r9)     # Store data[i] into data[i+1]
+        rmmovq %r10, 0x100(%r9)     # Store data[i+1] into data[i]
+        jmp InnerLoopStart          # Continue inner loop
+
+    LoopTest:
+        irmovq $0, %r10             # Load constant 0 into %r10
+        rrmovq %r8, %rax            # Copy last to %rax for comparison
+        subq %r10, %rax             # Subtract 0 from last
+        jg LoopStart                # If last > 0, continue outer loop
+
+# End of the program
+halt
